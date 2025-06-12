@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>模拟主机状态大屏</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #2c3e50;
+      color: #ecf0f1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+    header {
+      width: 100%;
+      padding: 20px;
+      text-align: center;
+      background: #34495e;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    #container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 1200px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .card {
+      background: #34495e;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .hostname {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .status {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .online {
+      color: #2ecc71;
+    }
+    .offline {
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>主机状态监控大屏</h1>
+  </header>
+  <div id="container"></div>
+
+  <script>
+    // 模拟主机列表（10个主机）
+    const hosts = [
+      { name: 'Host-A', status: 'online' },
+      { name: 'Host-B', status: 'offline' },
+      { name: 'Host-C', status: 'online' },
+      { name: 'Host-D', status: 'offline' },
+      { name: 'Host-E', status: 'online' },
+      { name: 'Host-F', status: 'offline' },
+      { name: 'Host-G', status: 'online' },
+      { name: 'Host-H', status: 'offline' },
+      { name: 'Host-I', status: 'online' },
+      { name: 'Host-J', status: 'offline' }
+    ];
+
+    const container = document.getElementById('container');
+
+    // 渲染函数
+    function render() {
+      container.innerHTML = '';
+      hosts.forEach(host => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        const nameEl = document.createElement('div');
+        nameEl.classList.add('hostname');
+        nameEl.textContent = host.name;
+
+        const statusEl = document.createElement('div');
+        statusEl.classList.add('status');
+        statusEl.textContent = host.status === 'online' ? '在线' : '离线';
+        statusEl.classList.add(host.status === 'online' ? 'online' : 'offline');
+
+        card.appendChild(nameEl);
+        card.appendChild(statusEl);
+        container.appendChild(card);
+      });
+    }
+
+    // 随机切换状态以模拟动态
+    function randomizeStatus() {
+      hosts.forEach(host => {
+        host.status = Math.random() > 0.5 ? 'online' : 'offline';
+      });
+      render();
+    }
+
+    // 初始化渲染，并每5秒更新一次
+    render();
+    setInterval(randomizeStatus, 5000); // 每5秒切换一次状态
+  </script>
+</body>
+</html>
