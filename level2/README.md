@@ -10,12 +10,12 @@
 ```
 docker build -t ansible_web .
 ```
-![构建镜像](1.png)
+![构建镜像](images/1.png)
 # 运行镜像
 ```
 docker run --name ansible_web -d -p "5000:5000"  ansible_web
 ```
-![运行镜像](2.png)
+![运行镜像](images/2.png)
 # 运行镜像
 ```
 docker run --name ansible_web -d -p "5000:5000"  ansible_web
@@ -23,4 +23,4 @@ docker run --name ansible_web -d -p "5000:5000"  ansible_web
 # 运行结果
 浏览器访问网页
 http://111.92.241.12:5000/exec?command=/usr/local/bin/ansible%20%20-i%20/home/project/hosts%20all%20-m%20ping
-![运行结果](3.png)
+![运行结果](images/3.png)
