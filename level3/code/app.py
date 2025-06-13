@@ -1,6 +1,7 @@
 from flask import Flask
-from flask import render_template,request
+from flask import render_template,request,jsonify
 import subprocess
+import json
  
 def run_cmd(command):
     try:
@@ -15,11 +16,31 @@ def run_cmd(command):
         output = str(e)
     return output
 
+def write_data(filepath,data):
+    with open(filepath,'w') as f:
+        f.write(data)
+        f.close()
+
 app=Flask(__name__)
 
-@app.route("/")
+@app.route("/",methods=['GET','POST'])
 def index():
-    return 'Hello,Ansible'
+    if request.method=='GET':
+        return render_template('index.html')
+    if request.method=='POST':
+        ip=request.form.get('ip')
+        port=request.form.get('port')
+        password=request.form.get('password')
+        playbook=request.form.get('playbook')
+        filename='/tmp/%s_playbook.yml'%ip
+        write_data(filename,playbook)
+        json_data={"ip":ip,'ansible_ssh_port':port,'ansible_ssh_pass':password}
+        json_str=json.dumps(json_data,indent=4)
+        host_data_filename='/tmp/%s_host.json'%ip
+        write_data(host_data_filename,json_str)
+        command="/usr/local/bin/ansible-playbook --ssh-extra-args='-o StrictHostKeyChecking=no'  --inventory="+ip+", --extra-vars=@"+host_data_filename+" "+filename
+        result=run_cmd(command)
+        return jsonify({"command":command,'result':result})
 
 @app.route('/exec')
 def exec_command():
