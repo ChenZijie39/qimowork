@@ -27,4 +27,4 @@
       register: status_response
     - name: 打印发送结果
       debug:
-        var: status_response
+        var: status_response.json

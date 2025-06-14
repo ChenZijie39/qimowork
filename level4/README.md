@@ -46,5 +46,5 @@ board页面通过get请求调用http://localhost:5000/status 会根据主机ip�
       register: status_response
     - name: 打印发送结果
       debug:
-        var: status_response
+        var: status_response.json
 ```
