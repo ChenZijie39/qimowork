@@ -1,0 +1,30 @@
+---
+- name: 收集主机状态信息
+  hosts: all
+  gather_facts: yes
+  tasks:
+    - name: 查看设备状态
+      ping:
+      register: ping_result
+      ignore_errors: yes
+    - name: 计算已用内存
+      set_fact:
+        used_memory: "{{ (ansible_memtotal_mb | int) - (ansible_memfree_mb  | int) }}"
+      ignore_errors: yes
+    - name: 发送数据到flask
+      uri:
+        url: http://localhost:5000/status
+        method: POST
+        headers:
+          Content-Type: application/json
+        body:
+          hostname: "{{inventory_hostname}}"
+          ip: "{{ansible_default_ipv4.address}}"
+          total_memory: "{{ansible_memtotal_mb}}"
+          used_memory : "{{used_memory }}"
+          status: "{{'success' if ping_result.ping == 'pong' else 'failed'}}"
+        body_format: json
+      register: status_response
+    - name: 打印发送结果
+      debug:
+        var: status_response
