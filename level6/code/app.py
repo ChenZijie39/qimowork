@@ -1,0 +1,115 @@
+from flask import Flask
+from flask import render_template,request,jsonify
+import json
+import math
+from ansible_tool import write_data,run_cmd
+from db import query_sql,execute_sql,init_db
+from user import user_bp
+from host import host_bp
+from login_required import login_required
+
+app=Flask(__name__)
+app.register_blueprint(user_bp)
+app.register_blueprint(host_bp)
+
+app.secret_key='host'
+
+@app.route("/",methods=['GET','POST'])
+def index():
+    if request.method=='GET':
+        return render_template('index.html')
+    if request.method=='POST':
+        ip=request.form.get('ip')
+        port=request.form.get('port')
+        password=request.form.get('password')
+        playbook=request.form.get('playbook')
+        filename='/tmp/%s_playbook.yml'%ip
+        write_data(filename,playbook)
+        json_data={"ip":ip,'ansible_ssh_port':port,'ansible_ssh_pass':password}
+        json_str=json.dumps(json_data,indent=4)
+        host_data_filename='/tmp/%s_host.json'%ip
+        write_data(host_data_filename,json_str)
+        command="/usr/local/bin/ansible-playbook --ssh-extra-args='-o StrictHostKeyChecking=no'  --inventory="+ip+", --extra-vars=@"+host_data_filename+" "+filename
+        result=run_cmd(command)
+        return jsonify({"command":command,'result':result})
+
+@app.route('/exec')
+def exec_command():
+    command=request.args.get('command')
+    result=run_cmd(command)
+    return result
+
+@app.route('/board')
+@login_required
+def board_page():
+    if request.method=='GET':
+        return render_template('board.html')
+
+@app.route('/collect')
+@login_required
+def collect_page():
+    device_list=[]
+    result=query_sql('select ip,ansible_ssh_port,ansible_ssh_pass from hosts')
+    for item in result:
+        device_list.append({
+            'ip':item[0],
+            'ansible_ssh_port':item[1],
+            'ansible_ssh_pass':item[2]
+        })
+    play_book_path='/home/project/play_book.yml'
+    data=[]
+    for item in device_list:
+        json_str=json.dumps(item,indent=4)
+        host_data_filename='/tmp/%s_host.json'%item['ip']
+        write_data(host_data_filename,json_str)
+        command="/usr/local/bin/ansible-playbook --ssh-extra-args='-o StrictHostKeyChecking=no'  --inventory="+item['ip']+", --extra-vars=@"+host_data_filename+" "+play_book_path
+        data.append({
+            'ip':item['ip'],
+            'result':run_cmd(command)
+        })
+    return jsonify({'code':'0','msg':'发送采集任务成功','data':data})
+
+@app.route('/status',methods=['GET','POST'])
+@login_required
+def status_page():
+    if request.method=='GET':
+        query = """
+        SELECT m.* 
+        FROM metrics m
+        INNER JOIN (
+            SELECT 
+                hostname, 
+                MAX(timestamp) AS max_ts
+            FROM metrics
+            GROUP BY hostname
+        ) sub ON m.hostname = sub.hostname 
+               AND m.timestamp = sub.max_ts
+        """
+        results=query_sql(query)
+        devices = []
+        for item in results:
+            devices.append({
+                'id':item[0],
+                'ip':item[2],
+                'name':item[1],
+                'status':item[3],
+                'total_memory':item[4],
+                'used_memory':item[5],
+                'timestamp':item[6],
+                'mem_percent': math.floor(item[5]*100/item[4])
+            })
+        return jsonify({'code':0,'data':devices})
+    
+    if request.method=='POST':
+        data = request.json   
+        execute_sql('''
+            INSERT INTO metrics (hostname, ip,status, total_memory, used_memory)
+            VALUES (?, ?,?, ?, ?)
+        ''', (data['hostname'], data['ip'],data['status'], data['total_memory'], data['used_memory']))
+        return jsonify({"status": "success"})
+        
+if __name__=='__main__':
+    init_db()
+    app.run(host='0.0.0.0',debug=True)
+else:
+    application=app

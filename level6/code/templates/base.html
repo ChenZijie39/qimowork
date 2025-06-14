@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>主机管理平台</title>
+  <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+  <link href="/static/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+  <link href="/static/css/jumbotron.css" rel="stylesheet">
+  <script src="/static/js/ie-emulation-modes-warning.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+          aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="/">主机管理平台</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+
+        <ul class="nav navbar-nav">
+          <li class=""><a href="/">首页</a></li>
+          <li class="dropdown">
+            <a href="/host/list" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+              aria-expanded="true">主机管理 <span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="/host/add">新增</a></li>
+              <li><a href="/host/list">查看</a></li>
+            </ul>
+          </li>
+          <li class=""><a href="/board" target="_blank">数据大屏</a></li>
+          {%if session.get('is_super') == 1 %}
+          <li class=""><a href="/user/list">用户管理</a></li>
+          {%endif%}
+        </ul>
+        {% if session.get('username') %}
+        <ul class="nav navbar-nav navbar-right">
+          <li><a>{{session.nickname}}</a></li>
+          <li><a href="/user/logout">退出</a></li>
+        </ul>
+        {% else %}
+        <form class="navbar-form navbar-right" method="post" action="/user/login">
+          <div class="form-group">
+            <input type="text" placeholder="用户名" autocomplete="off" name="username" class="form-control">
+          </div>
+          <div class="form-group">
+            <input type="password" placeholder="密码" name="password" autocomplete="off" class="form-control">
+          </div>
+          <button type="submit" class="btn btn-success">登录</button>
+          <a class="btn btn-success" href="/user/register">注册</a>
+        </form>
+        {%endif%}
+      </div>
+    </div>
+  </nav>
+
+  <div class="jumbotron">
+    <div class="container">
+      {%block body%}{%endblock%}
+    </div>
+  </div>
+
+  <div class="container">
+    <hr />
+    <footer>
+      <p>&copy; 2025 主机管理平台, Inc.</p>
+    </footer>
+  </div>
+  <script src="/static/js/jquery.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script src="/static/js/ie10-viewport-bug-workaround.js"></script>
+  {%block js%}{%endblock%}
+</body>
+
+</html>

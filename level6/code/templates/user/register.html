@@ -1,0 +1,19 @@
+{%extends 'base.html'%}
+{%block body%}
+<h2>请输入注册信息</h2>
+<form role="form" action="" method="post">
+  <div class="form-group">
+    <label for="username" class="sr-only">用户名</label>
+    <input type="text" id="username" name="username" class="form-control" placeholder="用户名" required autofocus>
+  </div>
+  <div class="form-group">
+    <label for="password" class="sr-only">Password</label>
+    <input type="password" id="password" class="form-control" placeholder="密码" name="password" required>
+  </div>
+  <div class="form-group">
+    <label for="nickname" class="sr-only">昵称</label>
+    <input placeholder="请输入昵称" type="text" class="form-control" name="nickname" required="required" />
+  </div>
+  <button class="btn btn-lg btn-primary btn-block" type="submit">注册</button>
+</form>
+{%endblock%}
